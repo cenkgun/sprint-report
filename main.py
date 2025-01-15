@@ -31,20 +31,31 @@ def health_check():
 def add_data():
     try:
         data = request.get_json()
-        row = [
-            data.get('sprintName', ''),
-            data.get('taskLink', ''),
-            data.get('taskId', ''),
-            data.get('title', ''),
-            data.get('status', ''),
-            data.get('component', ''),
-            data.get('assignee', ''),
-            data.get('storyPoints', ''),
-            data.get('issueType', ''),
-            data.get('pml', '')
-        ]
-        sheet.append_row(row)
-        return jsonify({"message": "Successfully completed!"}), 200
+        
+        # Gelen datanın issues array'ini kontrol et
+        if not data or 'issues' not in data:
+            return jsonify({"error": "Invalid data format. 'issues' array is required"}), 400
+
+        # Her issue için spreadsheet'e yeni bir satır ekle
+        for issue in data['issues']:
+            row = [
+                issue.get('sprintName', ''),
+                issue.get('taskLink', ''),
+                issue.get('taskId', ''),
+                issue.get('title', ''),
+                issue.get('status', ''),
+                issue.get('component', ''),
+                issue.get('assignee', ''),
+                issue.get('storyPoints', ''),
+                issue.get('issueType', ''),
+                issue.get('pml', '')
+            ]
+            sheet.append_row(row)
+
+        return jsonify({
+            "message": "Successfully completed!",
+            "processed_issues": len(data['issues'])
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
